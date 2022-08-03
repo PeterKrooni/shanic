@@ -27,12 +27,11 @@ pub mod tests {
     #[test]
     fn big_input() {
         let mut payload = String::new();
-        (0..1024).for_each(|_| payload.push('1'));
-        let expected = "b4a38f5f5a21b6ba9f2008878beaa3a708866c66cbada71ba28ec359b5a53c3c";
+        (0..1000).for_each(|_| payload.push('a'));
+        let expected = "41edece42d63e8d9bf515a9ba6932e1c20cbc9f5a5d134645adb5db1b9737ea3";
 
         let mut sh: Shanic = Shanic { chunks: Vec::new() };
         Shanic::queue(&mut sh, payload);
-
         assert_eq!(Shanic::to_string(Shanic::get(&mut sh)), expected);   
     }
 } 
