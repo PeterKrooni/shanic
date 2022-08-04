@@ -1,7 +1,7 @@
 mod chunk;
 mod setup;    
 
-const K_ARR: [u32; 64] = [
+const K: [u32; 64] = [
     0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
     0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
     0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
@@ -38,9 +38,9 @@ impl Shanic {
             let mut h_ = h;
 
             for i in 0..64 {
-                let s1 = h_[4].rotate_right(6) ^ h_[4].rotate_right(11) ^ h_[4].rotate_right(25);
+                let s1 = (h_[4].rotate_right(6)) ^ h_[4].rotate_right(11) ^ h_[4].rotate_right(25);
                 let ch = (h_[4] & h_[5]) ^ (!h_[4] & h_[6]);
-                let t1 = h_[7].wrapping_add(s1).wrapping_add(ch).wrapping_add(K_ARR[i]).wrapping_add(w[i]);
+                let t1 = h_[7].wrapping_add(s1).wrapping_add(ch).wrapping_add(K[i]).wrapping_add(w[i]);
                 let s0 = h_[0].rotate_right(2) ^ h_[0].rotate_right(13) ^ h_[0].rotate_right(22);
                 let ma = (h_[0] & h_[1]) ^ (h_[0] & h_[2]) ^ (h_[1] & h_[2]);
                 let t2 = s0.wrapping_add(ma);

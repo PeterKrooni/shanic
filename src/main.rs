@@ -1,32 +1,64 @@
-use std::time::SystemTime;
+use std::{time::SystemTime, time::Duration, env, process::exit};
 use shanic::Shanic;
 
 fn main() {
+    let mut args: Vec<String> = env::args().collect();
+    args.reverse(); args.pop(); args.reverse();
+    let mut benchmarking = false;
+    let mut bench_iter = 10000;
+    if args.len() > 0 {
+        match args[0].as_str() {
+            "-b" => { benchmarking = true; }
+            "-h" => {
+                println!("Args:");
+                println!("\t-b: <MAX, MIN, _> \t Benchmark algorithm; arguments are num iterations (10000000, 10000, 1000000)");
+                println!("\t-h: \t\t\t Show this dialogue");
+                exit(0);
+            }
+            _ => {}
+        }
+        if args.len() > 1 {
+            match args[1].as_str() {
+                "MAX" => { bench_iter = 10000000;}
+                "MIN" => { bench_iter = 10000; }
+                _     => { bench_iter = 1000000; }
+            }
+        }
+    }
+
     let mut sh: Shanic = Shanic { chunks: Vec::new() };
+
+    if benchmarking {         
+        println!("--------------------\nBenchmark Result\n--------------------");
+        Shanic::queue(&mut sh, "testval".to_owned());
+        let mut timestamps: Vec<Duration> = Vec::new();
+        for _ in 0..bench_iter {
+            let n = SystemTime::now();
+            let p = Shanic::get(&mut sh);
+            match n.elapsed() {
+                Ok(elapsed) => {
+                    assert_eq!(Shanic::to_string(p), "93285be41b243afa17cc06e34495c4ed6d3c96c68b07ceb2340baa71cb5c417");
+                    timestamps.push(elapsed);
+                }
+                Err(e) => {
+                    panic!("Benchmarking error, {}", e);
+                }
+            }
+        }
+        let mut t: u128 = 0;
+        let tll = timestamps.len() as u128;
+        for i in timestamps {
+            t += i.as_nanos();
+        }
+        let f: u128 = t / tll;
+        println!("Average duration (ns): {}", f);
+    } else {
+        println!("Your input:");
+        let mut input_string = String::new();
+        std::io::stdin().read_line(&mut input_string).expect("Something went wrong.");
     
-    let start_empty = SystemTime::now();
-    Shanic::queue(&mut sh, "".to_owned());
-    let res_empty = Shanic::get(&mut sh).iter().fold(String::new(), |acc, f| acc + format!("{:x}", f).as_str());
-    let end_empty = SystemTime::now();
-
-    let start_abc = SystemTime::now();
-    Shanic::queue(&mut sh, "abc".to_owned());
-    let res_abc = Shanic::get(&mut sh).iter().fold(String::new(), |acc, f| acc + format!("{:x}", f).as_str());
-    let end_abc = SystemTime::now();
-
-    assert_eq!(res_empty, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"); 
-    assert_eq!(res_abc, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad"); 
-
-    println!("--------------------\nBenchmark Result\n--------------------");
-    println!("Duration, empty: \t{:?}", end_empty.duration_since(start_empty));
-    println!("Duration, abc: \t\t{:?}", end_abc.duration_since(start_abc));
-
-    println!("\nYour input:");
-    let mut input_string = String::new();
-    std::io::stdin().read_line(&mut input_string).expect("Something went wrong.");
-
-    Shanic::queue(&mut sh, input_string.trim().to_owned());
-    println!("\nDigest:");
-    println!("{}", Shanic::to_string(Shanic::get(&mut sh)));
-
+        Shanic::queue(&mut sh, input_string.trim().to_owned());
+        println!("Digest:");
+        println!("{}", Shanic::to_string(Shanic::get(&mut sh)));
+    }
 }
